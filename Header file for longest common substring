@@ -1,16 +1,4 @@
 /*
-
-Input:
-Three Strings
-
-Output:
-Longest Common Substring
-
-Steps:-
-1. Use command "gcc -o output Assignment3_1001503737.cpp -lstdc++"
-2. Type "./output"
-3. Enter Input
-
 Reference:-
 1. http://ranger.uta.edu/~weems/NOTES5311/LAB/LAB3SPR18/SAcommonSubStr2.c
 2. https://www.youtube.com/watch?v=Ic80xQFWevc
