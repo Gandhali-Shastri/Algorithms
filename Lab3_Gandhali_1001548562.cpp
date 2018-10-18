@@ -1,0 +1,217 @@
+/*
+Gandhali Shastri
+1001548562
+Lab 3
+_______________________________________________
+
+Steps to execute:-
+1. cd Lab3
+2. Use command "gcc -o t1 1001548562_Gandhali.cpp"
+3. Type "./t1"
+
+
+Reference:-
+1. http://ranger.uta.edu/~weems/NOTES5311/LAB/LAB3SPR18/SAcommonSubStr2.c
+2. https://www.youtube.com*/
+// Use suffix array and LCP to compute
+// longest common substring of two input strings. BPW
+
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+char s[1000000], s1[500000], s2[500000], s3[500000];
+int n,           // length of s[] including \0
+sa[1000000],   // suffix array for s[]
+rank[1000000], // rank[i] gives the rank (subscript) of s[i] in sa[]
+lcp[1000000];  // lcp[i] indicates the number of identical prefix symbols
+               // for s[sa[i-1]] and s[sa[i]]
+
+int suffixCompare(const void *xVoidPt, const void *yVoidPt)
+{
+    // Used in qsort call to generate suffix array.
+    int *xPt = (int*)xVoidPt, *yPt = (int*)yVoidPt;
+
+    return strcmp(&s[*xPt], &s[*yPt]);
+}
+
+void computeRank()
+{
+    // Computes rank as the inverse permutation of the suffix array
+    int i;
+
+    for (i = 0; i<n; i++)
+        rank[sa[i]] = i;
+}
+
+void computeLCP()
+{
+    //Kasai et al linear-time construction
+    int h, i, j, k;
+
+    h = 0;  // Index to support result that lcp[rank[i]]>=lcp[rank[i-1]]-1
+    for (i = 0; i<n; i++)
+    {
+        k = rank[i];
+        if (k == 0)
+            lcp[k] = (-1);
+        else
+        {
+            j = sa[k - 1];
+            // Attempt to extend lcp
+            while (i + h<n && j + h<n && s[i + h] == s[j + h])
+                h++;
+            lcp[k] = h;
+        }
+        if (h>0)
+            h--;  // Decrease according to result
+    }
+}
+
+int main()
+{
+    int i, j, k, p, m, dollarPos, hashposition, LCSpos = 0, LCSlength = 0;
+
+
+    scanf("%s", s1);
+    scanf("%s", s2);
+    scanf("%s", s3);
+
+    //Concatinate Strings
+    for (i = 0; s1[i] != '\0'; i++)
+        s[i] = s1[i];
+
+    dollarPos = i;
+    s[i++] = '$';
+    for (j = 0; s2[j] != '\0'; j++)
+        s[i + j] = s2[j];
+
+    n = i + j;
+    hashposition = n;
+    s[n++] = '#';
+    for (m = 0; s3[m] != '\0'; m++)
+        s[n + m] = s3[m];
+
+    printf(" \n", s);
+    s[n + m] = '\0';
+    n = n + m + 1;
+
+
+    printf("n is %d\n", n);
+
+    // Quick-and-dirty suffix array construction
+    for (i = 0; i<n; i++)
+        sa[i] = i;
+    qsort(sa, n, sizeof(int), suffixCompare);
+    computeRank();
+    computeLCP();
+    if (n<20000)
+    {
+        printf("i   sa  suffix                              lcp s rank lcp[rank]\n");
+        for (i = 0; i<n; i++)
+            printf("%-3d %-3d %-35.35s %-3d %c  %-3d  %-3d\n",
+                i, sa[i], &s[sa[i]], lcp[i], s[i], rank[i], lcp[rank[i]]);
+    }
+   
+   //Code for Longest common substring with 3 strings
+   
+    int count = 0, s1 = 0,s2 = 0, s3 = 0, x, y, z, xpos, ypos, zpos, minPref = 0, maximum, minimum, middle;;
+	
+    for (j = 1; j < n; j++) {
+        for (i = j; i < n; i++) {
+            if (!(s1 == 1 && s2 == 1 && s3 == 1))
+			{
+ 
+                if (sa[i] > dollarPos && sa[i] < hashposition)
+				{
+                    if (s2 == 0)
+                        count++;
+                    s2 = 1;
+                    y = i;
+                }
+				if (sa[i] < dollarPos)
+				{
+                    if(s1==0)
+                        count++;
+                    s1 = 1;
+                    x = i;
+                }
+                if (sa[i] > hashposition)
+				{
+                    if (s3 == 0)
+                        count++;
+                    s3 = 1;
+                    z = i;
+                }
+            }
+            if (count==3)
+			{             
+                if (x<y && x<z)
+				{
+                    j = x;
+                    s1 = 0;
+                    minimum = x;
+                }
+                else if (y<x && y<z)
+				{
+                    j = y;
+                    s2 = 0;
+                    minimum = y;
+                }
+                else
+				{
+                    j = z;
+                    s3 = 0;
+                    minimum = z;
+                }
+
+
+                if (x>y && x>z)
+                    maximum = x;
+                else if (y>x && y>z)
+                    maximum = y;
+                else
+                    maximum = z;
+     
+               
+                if (x != maximum && x != minimum) 
+                    middle = x;
+                if (y != maximum && y != minimum) 
+                    middle = y;
+                if (z != maximum && z != minimum) 
+                    middle = z;
+				
+                if(lcp[maximum - 1] < lcp[maximum])
+					minPref = lcp[maximum - 1] ;
+				else
+					minPref = lcp[maximum];
+
+                if (minPref > LCSlength)
+				{
+                    LCSpos = maximum;
+                    LCSlength = minPref;
+                    xpos = minimum;
+                    ypos = middle;
+                    zpos = maximum;
+                    count = count-1;
+                    j = j + 1;
+                    break;
+                }
+               
+                count = count - 1;
+                j = j + 1;
+                break;
+            }
+        }
+    }
+   
+
+    printf("Length of longest common substring is %d", LCSlength);
+	printf("\n");
+    printf("x at %d, y ends at %d, z at %d", xpos,ypos,zpos);
+	printf("\n");
+    for (i = 0; i<LCSlength; i++)
+        printf("%count", s[sa[LCSpos] + i]);
+    printf("\n");
+   return 0;
+}
